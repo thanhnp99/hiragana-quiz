@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Game trắc nghiệm Hiragana 4 đáp án: xem chữ, nghe phát âm và chọn romaji đúng.">
+    <meta name="description" content="Game trắc nghiệm Hiragana & Katakana 4 đáp án và luyện viết chữ theo nét: xem chữ, nghe phát âm và chọn romaji đúng.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff6b6b'/%3E%3Ctext y='76' x='50' text-anchor='middle' font-size='68' fill='%23ffffff'%3E%E3%81%82%3C/text%3E%3C/svg%3E">
-    <title>Game Quiz Hiragana - Trắc nghiệm 4 đáp án</title>
+    <title>Game Quiz Hiragana &amp; Katakana - Trắc nghiệm 4 đáp án</title>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -191,6 +191,31 @@
         }
         .home-sub { color: #888; margin-top: 0; font-size: 15px; }
 
+        /* Chọn bộ chữ Hiragana / Katakana */
+        .script-switch {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .script-btn {
+            flex: 1;
+            padding: 8px 0;
+            font-size: 15px;
+            font-weight: bold;
+            border: 2px solid #dfe6e9;
+            background: #fff;
+            color: #555;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .script-btn:hover { border-color: #3498db; color: #3498db; }
+        .script-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: #fff;
+        }
+
         /* ==== Màn hình viết chữ ==== */
         .write-box { max-width: 420px; }
         .kana-picker {
@@ -306,17 +331,22 @@
 <!-- Màn hình chọn chế độ -->
 <div class="screen active" id="screen-home">
     <div class="container">
-        <h1>Hiragana Practice</h1>
-        <p class="home-sub">Học 46 chữ cơ bản</p>
+        <h1>Kana Practice</h1>
+        <p class="home-sub">46 Hiragana + 46 Katakana</p>
 
         <button class="mode-btn" onclick="showScreen('quiz')">
             <span class="mode-icon">📝</span>
-            <span>Trắc nghiệm<small>Xem chữ, nghe và chọn romaji đúng</small></span>
+            <span>Trắc nghiệm Hiragana<small>Xem chữ, nghe và chọn romaji đúng</small></span>
+        </button>
+
+        <button class="mode-btn" onclick="showScreen('quiz-katakana')">
+            <span class="mode-icon">🗣️</span>
+            <span>Trắc nghiệm Katakana<small>46 chữ cái báo hiệu, cùng 4 đáp án</small></span>
         </button>
 
         <button class="mode-btn" onclick="showScreen('write')">
             <span class="mode-icon">✍️</span>
-            <span>Viết chữ<small>Luyện viết theo từng nét</small></span>
+            <span>Viết chữ<small>Luyện viết nét theo Hiragana hoặc Katakana</small></span>
         </button>
     </div>
 </div>
@@ -327,7 +357,7 @@
     <div class="top-bar">
         <button class="back-btn" onclick="showScreen('home')">← Quay lại</button>
     </div>
-    <h1>Hiragana Quiz</h1>
+    <h1 id="quiz-title">Hiragana Quiz</h1>
     <div class="score">Điểm của bạn: <span id="score-val">0</span></div>
     
     <div class="character-box" id="character-display" onclick="playAudio()" title="Nhấn để nghe">あ</div>
@@ -355,6 +385,12 @@
         <div class="score" style="margin-bottom:0">Viết đúng: <span id="write-score">0</span></div>
     </div>
     <h1>Viết chữ</h1>
+
+    <!-- Chọn bộ chữ -->
+    <div class="script-switch">
+        <button class="script-btn active" data-script="hiragana" onclick="setWriteScript('hiragana')">Hiragana</button>
+        <button class="script-btn" data-script="katakana" onclick="setWriteScript('katakana')">Katakana</button>
+    </div>
 
     <!-- Chọn chữ cần luyện -->
     <div class="kana-picker" id="kana-picker"></div>
@@ -433,10 +469,64 @@
         { char: 'ん', romaji: 'n', hint: 'Như chữ n viết kéo dài, móc ở cuối — đọc "n".' }
     ];
 
+    const katakanaData = [
+        { char: 'ア', romaji: 'a', hint: 'Như chữ A bị gãy mất phần ngang giữa — đọc "a".' },
+        { char: 'イ', romaji: 'i', hint: 'Như chữ I nghiêng nghiêng như người đang sải bước — đọc "i".' },
+        { char: 'ウ', romaji: 'u', hint: 'Như chữ U vuông góc đội thêm một nét ngắn ở đỉnh — đọc "u".' },
+        { char: 'エ', romaji: 'e', hint: 'Như chữ I nằm ngang bị kẹp giữa hai vạch ngang — đọc "e" (ê).' },
+        { char: 'オ', romaji: 'o', hint: 'Như chữ A bị bẻ thêm một nét chéo ở vai trái — đọc "o" (ôi).' },
+        { char: 'カ', romaji: 'ka', hint: 'Như chữ か nhưng bẻ thẳng thành góc vuông — đọc "ka".' },
+        { char: 'キ', romaji: 'ki', hint: 'Như cây chìa khóa (key) với thân vuông góc — đọc "ki".' },
+        { char: 'ク', romaji: 'ku', hint: 'Như cái mỏ chim hếch lên trên — kêu "ku ku" — đọc "ku".' },
+        { char: 'ケ', romaji: 'ke', hint: 'Như chữ け bị bẻ vuông góc — đọc "ke" (ken nghĩa là kiếm).' },
+        { char: 'コ', romaji: 'ko', hint: 'Như hai cạnh trên và bên phải của ô vuông — đọc "ko".' },
+        { char: 'サ', romaji: 'sa', hint: 'Như chữ さ vuông góc, vạch ngang ở đỉnh — đọc "sa".' },
+        { char: 'シ', romaji: 'shi', hint: 'Hai chấm nghiêng rồi móc ngược lên như đèn pha — đọc "shi".' },
+        { char: 'ス', romaji: 'su', hint: 'Như cánh buồm đang tung, bẻ thành góc nhọn — đọc "su".' },
+        { char: 'セ', romaji: 'se', hint: 'Như chữ せ bị bẻ vuông góc — đọc "se" (sếp).' },
+        { char: 'ソ', romaji: 'so', hint: 'Như một nhát chém xiên xuống — đọc "so".' },
+        { char: 'タ', romaji: 'ta', hint: 'Như chữ た ghép vuông góc — đọc "ta" (tà).' },
+        { char: 'チ', romaji: 'chi', hint: 'Như chữ ち vuông góc, giống số 5 nghiêng — đọc "chi".' },
+        { char: 'ツ', romaji: 'tsu', hint: 'Ba giọt nước rơi: hai chấm chếch rồi kéo một nét dài — đọc "tsu".' },
+        { char: 'テ', romaji: 'te', hint: 'Hai vạch ngang rồi kéo chéo xuống như tia sét — đọc "te" (tê).' },
+        { char: 'ト', romaji: 'to', hint: 'Như cột cờ có một nhánh vươn sang phải — đọc "to".' },
+        { char: 'ナ', romaji: 'na', hint: 'Như chữ thập (số 10) bị nghiêng lệch — đọc "na" (na ná).' },
+        { char: 'ニ', romaji: 'ni', hint: 'Hai vạch ngang — "ni" chính là số 2 trong tiếng Nhật.' },
+        { char: 'ヌ', romaji: 'nu', hint: 'Hai nét chéo chụm lại, một nét ngắn đè lên giữa — đọc "nu".' },
+        { char: 'ネ', romaji: 'ne', hint: 'Như cây thánh giá có thêm móc bên trái — đọc "ne".' },
+        { char: 'ノ', romaji: 'no', hint: 'Như một nhát dao chém duy nhất — đọc "no".' },
+        { char: 'ハ', romaji: 'ha', hint: 'Hai nét chéo tách ra như râu mèo — đọc "ha" (ha ha).' },
+        { char: 'ヒ', romaji: 'hi', hint: 'Như chiếc ly nghiêng có chân đế ngang — đọc "hi" (hi hi).' },
+        { char: 'フ', romaji: 'fu', hint: 'Như dấu ngoặc kép mở (") bị kéo dài — đọc "fu" (Phú).' },
+        { char: 'ヘ', romaji: 'he', hint: 'Như đỉnh một ngọn núi, góc sắc hơn chữ へ — đọc "he".' },
+        { char: 'ホ', romaji: 'ho', hint: 'Như chữ H xòe thêm hai chân chéo — đọc "ho" (hô).' },
+        { char: 'マ', romaji: 'ma', hint: 'Như số 7 úp ngược, móc ngang ở phía trên — đọc "ma".' },
+        { char: 'ミ', romaji: 'mi', hint: 'Ba gạch xiên song song như ba sợi chỉ — đọc "mi" (mì).' },
+        { char: 'ム', romaji: 'mu', hint: 'Như hình tam giác bị chụm đuôi — đọc "mu" (mực).' },
+        { char: 'メ', romaji: 'me', hint: 'Hai nét chéo cắt nhau, nét sau dài hơn — đọc "me" (mắt).' },
+        { char: 'モ', romaji: 'mo', hint: 'Như chữ mo vuông góc: hai vạch ngang cắm vào cột dọc — đọc "mo" (mò).' },
+        { char: 'ヤ', romaji: 'ya', hint: 'Như mũi tên đang bay, vuông góc hơn chữ や — "ya" nghĩa là mũi tên.' },
+        { char: 'ユ', romaji: 'yu', hint: 'Như góc vuông úp sang bên phải, kín ở đáy — đọc "yu" (yêu).' },
+        { char: 'ヨ', romaji: 'yo', hint: 'Như chữ E bị xoay ngang, ba răng cưa hướng sang trái — đọc "yo" (dô!).' },
+        { char: 'ラ', romaji: 'ra', hint: 'Như chữ ら vuông góc, hai vạch ngang phía trên — đọc "ra".' },
+        { char: 'リ', romaji: 'ri', hint: 'Hai nét thẳng đứng như hai nhát dao, bên phải dài hơn — đọc "ri".' },
+        { char: 'ル', romaji: 'ru', hint: 'Như đôi chân đang sải, giống る nhưng không thắt nút — đọc "ru".' },
+        { char: 'レ', romaji: 're', hint: 'Như một đường chảy ngược lên rồi gãy xuống — đọc "re".' },
+        { char: 'ロ', romaji: 'ro', hint: 'Như ô cửa sổ khép kín hình chữ nhật — đọc "ro".' },
+        { char: 'ワ', romaji: 'wa', hint: 'Như chữ wa gấp khúc, thân thiên nga vuông góc — đọc "wa".' },
+        { char: 'ヲ', romaji: 'wo', hint: 'Như chữ W gộp còn 3 nét, chỉ dùng làm trợ từ — đọc như "o".' },
+        { char: 'ン', romaji: 'n', hint: 'Hai chấm xiên rồi kéo một nét lên chếch trên — đọc "n" (giống ん).' }
+    ];
+
     let currentQuestion = {};
     let score = 0;
     let lastIndex = -1;
     let jaVoice = null;
+    let activeSet = 'hiragana'; // bộ chữ đang làm quiz: 'hiragana' | 'katakana'
+
+    function currentData() {
+        return activeSet === 'katakana' ? katakanaData : hiraganaData;
+    }
 
     const charDisplay = document.getElementById('character-display');
     const optionsContainer = document.getElementById('options-container');
@@ -456,7 +546,7 @@
     // Hàm tạo 4 lựa chọn ngẫu nhiên (1 đúng + 3 sai)
     function generateOptions(correctAnswer) {
         const wrongOnes = shuffle(
-            hiraganaData.map(item => item.romaji).filter(romaji => romaji !== correctAnswer)
+            currentData().map(item => item.romaji).filter(romaji => romaji !== correctAnswer)
         );
 
         return shuffle([correctAnswer, ...wrongOnes.slice(0, 3)]);
@@ -469,12 +559,13 @@
         hintBox.style.display = 'none';
 
         // Lấy chữ cái ngẫu nhiên làm câu hỏi (không lặp chữ vừa làm)
-        let randomIndex = Math.floor(Math.random() * hiraganaData.length);
+        const dataList = currentData();
+        let randomIndex = Math.floor(Math.random() * dataList.length);
         while (randomIndex === lastIndex) {
-            randomIndex = Math.floor(Math.random() * hiraganaData.length);
+            randomIndex = Math.floor(Math.random() * dataList.length);
         }
         lastIndex = randomIndex;
-        currentQuestion = hiraganaData[randomIndex];
+        currentQuestion = dataList[randomIndex];
         charDisplay.textContent = currentQuestion.char;
 
         // Render 4 nút lựa chọn
@@ -561,21 +652,35 @@
     }
 
     // =================== CHUYỂN MÀN HÌNH ===================
-    let quizStarted = false;
+    let quizStarted = { hiragana: false, katakana: false };
     let writeStarted = false;
 
+    // Tên hash -> màn hình (quiz Hiragana và Katakana dùng chung màn hình)
+    const SCREEN_OF = { home: 'home', quiz: 'quiz', 'quiz-katakana': 'quiz', write: 'write' };
+
     function showScreen(name) {
-        if (name !== 'quiz' && name !== 'write') name = 'home';
+        const screenName = SCREEN_OF[name] || 'home';
+        if (!SCREEN_OF[name]) name = 'home';
 
         document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.toggle('active', screen.id === 'screen-' + name);
+            screen.classList.toggle('active', screen.id === 'screen-' + screenName);
         });
 
-        if (name === 'quiz' && !quizStarted) {
-            quizStarted = true;
-            nextQuestion();
+        if (screenName === 'quiz') {
+            const set = name === 'quiz-katakana' ? 'katakana' : 'hiragana';
+            document.getElementById('quiz-title').textContent =
+                set === 'katakana' ? 'Katakana Quiz' : 'Hiragana Quiz';
+
+            if (activeSet !== set || !quizStarted[set]) {
+                activeSet = set;
+                quizStarted[set] = true;
+                score = 0;
+                scoreVal.textContent = score;
+                lastIndex = -1;
+                nextQuestion();
+            }
         }
-        if (name === 'write' && !writeStarted) {
+        if (screenName === 'write' && !writeStarted) {
             writeStarted = true;
             initWriteScreen();
         }
@@ -593,6 +698,7 @@
     const END_TOLERANCE = 32;
 
     let writeChar = 'あ';
+    let writeScript = 'hiragana'; // bộ chữ đang luyện viết: 'hiragana' | 'katakana'
     let modelPathEls = [];
     let userStrokeEls = [];
     let expectedStroke = 0;
@@ -647,10 +753,34 @@
         add('line', { x1: size - 9, y1: 9, x2: 9, y2: size - 9, stroke: '#eef3f6', 'stroke-width': 1.2, 'stroke-dasharray': '4 8' });
     }
 
+    function writeData() {
+        return writeScript === 'katakana' ? katakanaData : hiraganaData;
+    }
+
+    function strokeDataFor(ch) {
+        const source = writeScript === 'katakana'
+            ? (typeof KATAKANA_STROKE_DATA !== 'undefined' ? KATAKANA_STROKE_DATA : null)
+            : (typeof STROKE_DATA !== 'undefined' ? STROKE_DATA : null);
+        return source ? source[ch] : null;
+    }
+
+    function setWriteScript(script) {
+        if (script !== 'hiragana' && script !== 'katakana') return;
+        if (script === writeScript) return;
+        writeScript = script;
+
+        document.querySelectorAll('.script-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.script === script);
+        });
+
+        buildKanaPicker();
+        selectKana(writeData()[0].char);
+    }
+
     function buildKanaPicker() {
         const picker = document.getElementById('kana-picker');
         picker.innerHTML = '';
-        hiraganaData.forEach(item => {
+        writeData().forEach(item => {
             const btn = document.createElement('button');
             btn.className = 'kana-btn';
             btn.type = 'button';
@@ -668,7 +798,7 @@
             btn.classList.toggle('active', btn.textContent === ch);
         });
 
-        const item = hiraganaData.find(entry => entry.char === ch);
+        const item = writeData().find(entry => entry.char === ch);
         writeCharLabel.textContent = item ? `${ch} (${item.romaji})` : ch;
         loadModel();
     }
@@ -686,7 +816,7 @@
         drawing = false;
         demoRunning = false;
 
-        const paths = (typeof STROKE_DATA !== 'undefined') ? STROKE_DATA[writeChar] : null;
+        const paths = strokeDataFor(writeChar);
         if (!paths || !paths.length) {
             updateStrokeProgress();
             setWriteMessage('Chưa có dữ liệu nét cho chữ này.', 'wrong');
@@ -855,9 +985,10 @@
     }
 
     function nextWriteChar() {
+        const dataList = writeData();
         let next = writeChar;
-        while (next === writeChar && hiraganaData.length > 1) {
-            next = hiraganaData[Math.floor(Math.random() * hiraganaData.length)].char;
+        while (next === writeChar && dataList.length > 1) {
+            next = dataList[Math.floor(Math.random() * dataList.length)].char;
         }
         selectKana(next);
     }

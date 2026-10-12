@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Quiz Hiragana - Trắc nghiệm 4 đáp án</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+        .score {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .character-box {
+            font-size: 100px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+            background: #eef2f5;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .character-box:hover {
+            background: #dfe6e9;
+        }
+        
+        /* Grid chứa 4 đáp án */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            padding: 15px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            background-color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            color: #333;
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            background-color: #f1f2f6;
+            border-color: #3498db;
+        }
+        
+        /* Trạng thái đúng/sai cho nút đáp án */
+        .option-btn.correct-ans {
+            background-color: #4cd137 !important;
+            color: white !important;
+            border-color: #4cd137 !important;
+        }
+        
+        .option-btn.wrong-ans {
+            background-color: #e84118 !important;
+            color: white !important;
+            border-color: #e84118 !important;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 10px 20px;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-hint { background-color: #fbc531; color: white; }
+        .btn-hint:hover { background-color: #e1b12c; }
+
+        .btn-audio { background-color: #3498db; color: white; }
+        .btn-audio:hover { background-color: #2980b9; }
+        
+        .message {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 25px;
+        }
+        .correct { color: #4cd137; }
+        .wrong { color: #e84118; }
+        
+        .hint-box {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 15px;
+            display: none;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Hiragana Quiz</h1>
+    <div class="score">Điểm của bạn: <span id="score-val">0</span></div>
+    
+    <div class="character-box" id="character-display" onclick="playAudio()" title="Nhấn để nghe">あ</div>
+    
+    <!-- Vùng chứa 4 đáp án -->
+    <div class="options-grid" id="options-container">
+        <!-- Các nút sẽ được tạo bằng Javascript -->
+    </div>
+    
+    <div class="btn-group">
+        <button class="action-btn btn-audio" onclick="playAudio()">🔊 Nghe</button>
+        <button class="action-btn btn-hint" onclick="showHint()">Gợi ý</button>
+    </div>
+    
+    <div class="message" id="message"></div>
+    <div class="hint-box" id="hint-box"></div>
+</div>
+
+<script>
+    const hiraganaData = [
+        { char: 'あ', romaji: 'a', hint: 'Giống chữ "A" có cái bụng to ở trong.' },
+        { char: 'い', romaji: 'i', hint: 'Hai nét thẳng đứng, giống chữ "i".' },
+        { char: 'う', romaji: 'u', hint: 'Giống chữ "U" bị lật nằm ngang.' },
+        { char: 'え', romaji: 'e', hint: 'Giống chữ "Z" có thêm cái đuôi.' },
+        { char: 'お', romaji: 'o', hint: 'Giống chữ "a" (あ) nhưng có thêm dấu phẩy ở trên.' },
+        { char: 'か', romaji: 'ka', hint: 'Một lực sĩ đang gồng tay khoe cơ bắp.' },
+        { char: 'き', romaji: 'ki', hint: 'Trông giống cái chìa khóa (key).' },
+        { char: 'く', romaji: 'ku', hint: 'Giống cái mỏ của chim cú.' },
+        { char: 'け', romaji: 'ke', hint: 'Giống thanh kiếm cắm xuống đất.' },
+        { char: 'こ', romaji: 'ko', hint: 'Hai con cá koi bơi song song.' },
+        { char: 'さ', romaji: 'sa', hint: 'Giống chữ ki (き) nhưng bị mất 1 vạch ngang.' },
+        { char: 'し', romaji: 'shi', hint: 'Trông như cái lưỡi câu cá.' },
+        { char: 'す', romaji: 'su', hint: 'Sợi dây bị thắt nút vòng tròn.' },
+        { char: 'せ', romaji: 'se', hint: 'Khuôn mặt mỉm cười hơi méo.' },
+        { char: 'そ', romaji: 'so', hint: 'Chữ Z cõng chữ C.' },
+        { char: 'た', romaji: 'ta', hint: 'Chữ "t" và "a" (viết tắt của "ta").' },
+        { char: 'ち', romaji: 'chi', hint: 'Giống số 5 có cái bụng bự.' },
+        { char: 'つ', romaji: 'tsu', hint: 'Giống hình ảnh cơn sóng thần (Tsunami).' },
+        { char: 'て', romaji: 'te', hint: 'Giống chữ T hoặc số 7 cách điệu.' },
+        { char: 'と', romaji: 'to', hint: 'Dấu chéo nhỏ cắm vào chữ C.' },
+        { char: 'な', romaji: 'na', hint: 'Một người đang quỳ gối xin lỗi bên cạnh cột.' },
+        { char: 'に', romaji: 'ni', hint: 'Có 2 vạch ngang (số 2 là "ni" trong tiếng Nhật).' },
+        { char: 'ぬ', romaji: 'nu', hint: 'Sợi bún bị rối thắt nút ở đuôi.' },
+        { char: 'ね', romaji: 'ne', hint: 'Con mèo (neko) với cái đuôi xoăn xoắn lại.' },
+        { char: 'の', romaji: 'no', hint: 'Giống biển báo cấm (No).' },
+        { char: 'は', romaji: 'ha', hint: 'Giống chữ "H" và chữ "a" nhỏ ghép lại.' },
+        { char: 'ひ', romaji: 'hi', hint: 'Khuôn mặt cười hếch miệng "hi hi".' },
+        { char: 'ふ', romaji: 'fu', hint: 'Hình ảnh ngọn núi Phú Sĩ có mây 2 bên.' },
+        { char: 'へ', romaji: 'he', hint: 'Đỉnh của một ngọn núi.' },
+        { char: 'ほ', romaji: 'ho', hint: 'Giống chữ "ha" (は) bị đóng thêm nắp đậy lên trên.' },
+        { char: 'ま', romaji: 'ma', hint: 'Cột buồm của một con tàu với 2 cánh buồm.' },
+        { char: 'み', romaji: 'mi', hint: 'Số 21 viết nghiêng nghiêng.' },
+        { char: 'む', romaji: 'mu', hint: 'Con bò kêu "mu mu" bị buộc dây.' },
+        { char: 'め', romaji: 'me', hint: 'Trông giống con mắt (me trong tiếng Nhật là mắt).' },
+        { char: 'も', romaji: 'mo', hint: 'Một con giun bị mắc trên lưỡi câu.' },
+        { char: 'や', romaji: 'ya', hint: 'Mũi tên bay xuyên qua mục tiêu.' },
+        { char: 'ゆ', romaji: 'yu', hint: 'Con cá đang bơi lội.' },
+        { char: 'よ', romaji: 'yo', hint: 'Giống số 4 (yon) cách điệu.' },
+        { char: 'ら', romaji: 'ra', hint: 'Giống chữ "chi" (ち) nhưng nét trên cùng rời ra.' },
+        { char: 'り', romaji: 'ri', hint: 'Giống chữ "i" (い) nhưng nét bên phải dài hơn.' },
+        { char: 'る', romaji: 'ru', hint: 'Số 3 có một cái đuôi thắt nút ở dưới.' },
+        { char: 'れ', romaji: 're', hint: 'Một người đang quỳ gối gập lưng xuống.' },
+        { char: 'ろ', romaji: 'ro', hint: 'Số 3 bình thường (không có đuôi thắt nút như る).' },
+        { char: 'わ', romaji: 'wa', hint: 'Trông giống hình dáng con thiên nga.' },
+        { char: 'を', romaji: 'wo', hint: 'Người vận động viên đang nhảy sào.' },
+        { char: 'ん', romaji: 'n', hint: 'Chữ "n" viết kéo dài có móc ở cuối.' }
+    ];
+
+    let currentQuestion = {};
+    let score = 0;
+
+    const charDisplay = document.getElementById('character-display');
+    const optionsContainer = document.getElementById('options-container');
+    const messageEl = document.getElementById('message');
+    const hintBox = document.getElementById('hint-box');
+    const scoreVal = document.getElementById('score-val');
+
+    // Hàm tạo 4 lựa chọn ngẫu nhiên
+    function generateOptions(correctAnswer) {
+        let options = [correctAnswer];
+        
+        while(options.length < 4) {
+            let randomIndex = Math.floor(Math.random() * hiraganaData.length);
+            let randomRomaji = hiraganaData[randomIndex].romaji;
+            
+            // Đảm bảo không bị trùng đáp án
+            if(!options.includes(randomRomaji)) {
+                options.push(randomRomaji);
+            }
+        }
+        
+        // Xáo trộn mảng để đáp án đúng nằm ở vị trí bất kỳ
+        return options.sort(() => Math.random() - 0.5);
+    }
+
+    function nextQuestion() {
+        // Xoá thông báo cũ
+        messageEl.textContent = '';
+        messageEl.className = 'message';
+        hintBox.style.display = 'none';
+
+        // Lấy chữ cái ngẫu nhiên làm câu hỏi
+        const randomIndex = Math.floor(Math.random() * hiraganaData.length);
+        currentQuestion = hiraganaData[randomIndex];
+        charDisplay.textContent = currentQuestion.char;
+
+        // Render 4 nút lựa chọn
+        const options = generateOptions(currentQuestion.romaji);
+        optionsContainer.innerHTML = ''; // Làm sạch container trước
+        
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.onclick = () => checkAnswer(opt, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // Đọc âm thanh tiếng Nhật
+    function playAudio() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(currentQuestion.char);
+            utterance.lang = 'ja-JP'; 
+            utterance.rate = 0.8;    
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Trình duyệt của bạn không hỗ trợ phát âm thanh.");
+        }
+    }
+
+    function showHint() {
+        hintBox.innerHTML = `<strong>Mẹo nhớ:</strong> ${currentQuestion.hint}`;
+        hintBox.style.display = 'block';
+    }
+
+    // Chấm điểm khi click vào 1 trong 4 đáp án
+    function checkAnswer(selectedOption, btnElement) {
+        // Vô hiệu hoá tất cả các nút để tránh click liên tiếp
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(btn => btn.disabled = true);
+
+        if (selectedOption === currentQuestion.romaji) {
+            btnElement.classList.add('correct-ans');
+            messageEl.textContent = 'Chính xác!';
+            messageEl.className = 'message correct';
+            score++;
+            scoreVal.textContent = score;
+            
+            // Nếu đúng, qua câu mới nhanh hơn (1 giây)
+            setTimeout(nextQuestion, 1000);
+        } else {
+            btnElement.classList.add('wrong-ans');
+            
+            // Tìm và bôi xanh luôn cả đáp án đúng để người dùng biết
+            allBtns.forEach(btn => {
+                if (btn.textContent === currentQuestion.romaji) {
+                    btn.classList.add('correct-ans');
+                }
+            });
+            
+            messageEl.textContent = `Sai rồi! Đáp án đúng là "${currentQuestion.romaji}"`;
+            messageEl.className = 'message wrong';
+            score = 0; 
+            scoreVal.textContent = score;
+            
+            // Nếu sai, dừng lâu hơn một chút (1.8 giây) để học sinh kịp nhìn đáp án
+            setTimeout(nextQuestion, 1800);
+        }
+    }
+
+    // Bắt đầu game khi tải trang
+    window.onload = nextQuestion;
+</script>
+
+</body>
+</html>

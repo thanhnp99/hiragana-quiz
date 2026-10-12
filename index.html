@@ -135,6 +135,13 @@
             display: none;
             border: 1px solid #ffeeba;
         }
+        .hint-ex {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #e0c687;
+            font-size: 14px;
+        }
+        .hint-ex b { font-size: 16px; }
 
         /* ==== Màn hình chọn chế độ ==== */
         .screen {
@@ -420,102 +427,103 @@
 
 <script src="strokes.js"></script>
 <script>
+    // Từ vựng ví dụ lấy theo giáo trình JPD133 (Từ vựng 1-15)
     const hiraganaData = [
-        { char: 'あ', romaji: 'a', hint: 'Như chữ A có bụng to, miệng hô "a—" dài — đọc "a".' },
-        { char: 'い', romaji: 'i', hint: 'Hai nét thẳng đứng như hai ngón tay chụm lại — đọc "i".' },
-        { char: 'う', romaji: 'u', hint: 'Chữ U nằm ngang, đội thêm một nét nhỏ ở trên đầu — đọc "u".' },
-        { char: 'え', romaji: 'e', hint: 'Như chữ Z bị ngoắt thêm một cái đuôi — đọc "e" (ê).' },
-        { char: 'お', romaji: 'o', hint: 'Như chữ あ nhưng thêm một chấm ở vai phải — đọc "o" (ôi).' },
-        { char: 'か', romaji: 'ka', hint: 'Như chữ K bị nghiêng, thêm một nét chéo nhỏ — đọc "ka".' },
-        { char: 'き', romaji: 'ki', hint: 'Trông như cái chìa khóa (key) — đọc "ki".' },
-        { char: 'く', romaji: 'ku', hint: 'Như cái mỏ chim đang há ra — kêu "ku ku" — đọc "ku".' },
-        { char: 'け', romaji: 'ke', hint: 'Như một thanh kiếm cắm xuống đất — đọc "ke" (ken nghĩa là kiếm).' },
-        { char: 'こ', romaji: 'ko', hint: 'Hai nét ngang như hai con cá koi bơi song song — đọc "ko".' },
-        { char: 'さ', romaji: 'sa', hint: 'Như chữ き nhưng chỉ còn 1 vạch ngang — đọc "sa".' },
-        { char: 'し', romaji: 'shi', hint: 'Như cái lưỡi câu cá — đọc "shi".' },
-        { char: 'す', romaji: 'su', hint: 'Sợi dây bị thắt nút vòng tròn ở giữa — đọc "su".' },
-        { char: 'せ', romaji: 'se', hint: 'Như chữ E nằm nghiêng: 1 vạch ngang + 2 nét đứng — đọc "se" (sếp).' },
-        { char: 'そ', romaji: 'so', hint: 'Như chữ Z bị bẻ thêm một nét cong phía dưới — đọc "so".' },
-        { char: 'た', romaji: 'ta', hint: 'Như chữ "t" và chữ "a" ghép lại — đọc "ta" (tà).' },
-        { char: 'ち', romaji: 'chi', hint: 'Như số 5 có cái bụng bự — đọc "chi".' },
-        { char: 'つ', romaji: 'tsu', hint: 'Như cơn sóng thần (Tsunami) — đọc "tsu".' },
-        { char: 'て', romaji: 'te', hint: 'Như chữ T bị bẻ cong — đọc "te" (tê).' },
-        { char: 'と', romaji: 'to', hint: 'Như chữ C bị cắm thêm một gạch chéo — đọc "to".' },
-        { char: 'な', romaji: 'na', hint: 'Nét cuối thắt một cái nút như cái nơ — đọc "na" (na ná).' },
-        { char: 'に', romaji: 'ni', hint: 'Nét đứng bên trái + 2 vạch ngang như số 2 — "ni" chính là số 2 trong tiếng Nhật.' },
-        { char: 'ぬ', romaji: 'nu', hint: 'Nét cuối thắt nút như sợi bún rối — đọc "nu".' },
-        { char: 'ね', romaji: 'ne', hint: 'Như con mèo (neko) với cái đuôi xoắn nút — đọc "ne".' },
-        { char: 'の', romaji: 'no', hint: 'Như biển báo cấm (NO) — đọc "no".' },
-        { char: 'は', romaji: 'ha', hint: 'Nét bên phải như cây bút cắm vào sợi dây, nghe như cười "ha ha" — đọc "ha".' },
-        { char: 'ひ', romaji: 'hi', hint: 'Như khuôn mặt cười hếch miệng — cười "hi hi" — đọc "hi".' },
-        { char: 'ふ', romaji: 'fu', hint: 'Như đỉnh núi Phú Sĩ — đọc "fu" (Phú).' },
-        { char: 'へ', romaji: 'he', hint: 'Như cái đỉnh của một ngọn núi — đọc "he".' },
-        { char: 'ほ', romaji: 'ho', hint: 'Như chữ は nhưng thêm một vạch ngang trên đầu — đọc "ho" (hô).' },
-        { char: 'ま', romaji: 'ma', hint: 'Như cột buồm có 2 cánh buồm (2 vạch ngang), đuôi thắt nút — đọc "ma".' },
-        { char: 'み', romaji: 'mi', hint: 'Như chữ M bị nghiêng rồi chụm đuôi lại — đọc "mi" (mì).' },
-        { char: 'む', romaji: 'mu', hint: 'Như chữ m bị thắt nút ở giữa — đọc "mu" (mực).' },
-        { char: 'め', romaji: 'me', hint: 'Trông như con mắt — trong tiếng Nhật "me" nghĩa là mắt.' },
-        { char: 'も', romaji: 'mo', hint: 'Như lưỡi câu có thêm 2 vạch ngang — đọc "mo" (mò cá).' },
-        { char: 'や', romaji: 'ya', hint: 'Như mũi tên đang bay — trong tiếng Nhật "ya" nghĩa là mũi tên.' },
-        { char: 'ゆ', romaji: 'yu', hint: 'Như vòng tròn ôm lấy một nét, như con cá đang bơi — đọc "yu" (yêu).' },
-        { char: 'よ', romaji: 'yo', hint: 'Như chữ Y bị gãy, thêm một vạch ngang — đọc "yo" (dô!).' },
-        { char: 'ら', romaji: 'ra', hint: 'Như chữ r viết tay, nét phía trên là chấm nhỏ — đọc "ra".' },
-        { char: 'り', romaji: 'ri', hint: 'Như chữ い nhưng nét bên phải dài hơn — đọc "ri".' },
-        { char: 'る', romaji: 'ru', hint: 'Như số 3 có thêm cái đuôi thắt nút — đọc "ru".' },
-        { char: 'れ', romaji: 're', hint: 'Như chữ る nhưng đuôi không thắt nút, vẩy thẳng ra — đọc "re".' },
-        { char: 'ろ', romaji: 'ro', hint: 'Như số 3 bình thường, không có nút ở đuôi — đọc "ro".' },
-        { char: 'わ', romaji: 'wa', hint: 'Như thân thiên nga cong tròn — đọc "wa".' },
-        { char: 'を', romaji: 'wo', hint: 'Như người đang nhảy sào — chỉ dùng làm trợ từ, đọc như "o".' },
-        { char: 'ん', romaji: 'n', hint: 'Như chữ n viết kéo dài, móc ở cuối — đọc "n".' }
+        { char: 'あ', romaji: 'a', hint: 'Như chữ A có bụng to, miệng hô "a—" dài — đọc "a".', ex: { w: 'あさ', r: 'asa', vn: 'Buổi sáng' } },
+        { char: 'い', romaji: 'i', hint: 'Hai nét thẳng đứng như hai ngón tay chụm lại — đọc "i".', ex: { w: '行きます（いきます）', r: 'ikimasu', vn: 'Đi' } },
+        { char: 'う', romaji: 'u', hint: 'Chữ U nằm ngang, đội thêm một nét nhỏ ở trên đầu — đọc "u".', ex: { w: 'うさぎ', r: 'usagi', vn: 'Con thỏ' } },
+        { char: 'え', romaji: 'e', hint: 'Như chữ Z bị ngoắt thêm một cái đuôi — đọc "e" (ê).', ex: { w: '駅（えき）', r: 'eki', vn: 'Nhà ga' } },
+        { char: 'お', romaji: 'o', hint: 'Như chữ あ nhưng thêm một chấm ở vai phải — đọc "o" (ôi).', ex: { w: '音楽（おんがく）', r: 'ongaku', vn: 'Âm nhạc' } },
+        { char: 'か', romaji: 'ka', hint: 'Như chữ K bị nghiêng, thêm một nét chéo nhỏ — đọc "ka".', ex: { w: 'かばん', r: 'kaban', vn: 'Cặp, túi xách' } },
+        { char: 'き', romaji: 'ki', hint: 'Trông như cái chìa khóa (key) — đọc "ki".', ex: { w: 'きって', r: 'kitte', vn: 'Tem' } },
+        { char: 'く', romaji: 'ku', hint: 'Như cái mỏ chim đang há ra — kêu "ku ku" — đọc "ku".', ex: { w: 'くつ', r: 'kutsu', vn: 'Giày' } },
+        { char: 'け', romaji: 'ke', hint: 'Như một thanh kiếm cắm xuống đất — đọc "ke" (ken nghĩa là kiếm).', ex: { w: 'けさ', r: 'kesa', vn: 'Sáng nay' } },
+        { char: 'こ', romaji: 'ko', hint: 'Hai nét ngang như hai con cá koi bơi song song — đọc "ko".', ex: { w: '子ども（こども）', r: 'kodomo', vn: 'Đứa trẻ, con' } },
+        { char: 'さ', romaji: 'sa', hint: 'Như chữ き nhưng chỉ còn 1 vạch ngang — đọc "sa".', ex: { w: 'さかな', r: 'sakana', vn: 'Cá' } },
+        { char: 'し', romaji: 'shi', hint: 'Như cái lưỡi câu cá — đọc "shi".', ex: { w: '仕事（しごと）', r: 'shigoto', vn: 'Công việc' } },
+        { char: 'す', romaji: 'su', hint: 'Sợi dây bị thắt nút vòng tròn ở giữa — đọc "su".', ex: { w: 'すし', r: 'sushi', vn: 'Món sushi' } },
+        { char: 'せ', romaji: 'se', hint: 'Như chữ E nằm nghiêng: 1 vạch ngang + 2 nét đứng — đọc "se" (sếp).', ex: { w: '先生（せんせい）', r: 'sensei', vn: 'Thầy/Cô giáo' } },
+        { char: 'そ', romaji: 'so', hint: 'Như chữ Z bị bẻ thêm một nét cong phía dưới — đọc "so".', ex: { w: 'そば', r: 'soba', vn: 'Món mì soba' } },
+        { char: 'た', romaji: 'ta', hint: 'Như chữ "t" và chữ "a" ghép lại — đọc "ta" (tà).', ex: { w: 'たまご', r: 'tamago', vn: 'Trứng' } },
+        { char: 'ち', romaji: 'chi', hint: 'Như số 5 có cái bụng bự — đọc "chi".', ex: { w: '父（ちち）', r: 'chichi', vn: 'Bố (của mình)' } },
+        { char: 'つ', romaji: 'tsu', hint: 'Như cơn sóng thần (Tsunami) — đọc "tsu".', ex: { w: '作ります（つくります）', r: 'tsukurimasu', vn: 'Làm, chế tạo' } },
+        { char: 'て', romaji: 'te', hint: 'Như chữ T bị bẻ cong — đọc "te" (tê).', ex: { w: '手紙（てがみ）', r: 'tegami', vn: 'Thư' } },
+        { char: 'と', romaji: 'to', hint: 'Như chữ C bị cắm thêm một gạch chéo — đọc "to".', ex: { w: '時計（とけい）', r: 'tokei', vn: 'Đồng hồ' } },
+        { char: 'な', romaji: 'na', hint: 'Nét cuối thắt một cái nút như cái nơ — đọc "na" (na ná).', ex: { w: '名前（なまえ）', r: 'namae', vn: 'Tên' } },
+        { char: 'に', romaji: 'ni', hint: 'Nét đứng bên trái + 2 vạch ngang như số 2 — "ni" chính là số 2 trong tiếng Nhật.', ex: { w: '日本（にほん）', r: 'nihon', vn: 'Nhật Bản' } },
+        { char: 'ぬ', romaji: 'nu', hint: 'Nét cuối thắt nút như sợi bún rối — đọc "nu".', ex: { w: '脱ぎます（ぬぎます）', r: 'nugimasu', vn: 'Cởi (quần áo)' } },
+        { char: 'ね', romaji: 'ne', hint: 'Như con mèo (neko) với cái đuôi xoắn nút — đọc "ne".', ex: { w: '猫（ねこ）', r: 'neko', vn: 'Con mèo' } },
+        { char: 'の', romaji: 'no', hint: 'Như biển báo cấm (NO) — đọc "no".', ex: { w: '飲み物（のみもの）', r: 'nomimono', vn: 'Đồ uống' } },
+        { char: 'は', romaji: 'ha', hint: 'Nét bên phải như cây bút cắm vào sợi dây, nghe như cười "ha ha" — đọc "ha".', ex: { w: '花（はな）', r: 'hana', vn: 'Hoa' } },
+        { char: 'ひ', romaji: 'hi', hint: 'Như khuôn mặt cười hếch miệng — cười "hi hi" — đọc "hi".', ex: { w: '飛行機（ひこうき）', r: 'hikouki', vn: 'Máy bay' } },
+        { char: 'ふ', romaji: 'fu', hint: 'Như đỉnh núi Phú Sĩ — đọc "fu" (Phú).', ex: { w: '冬（ふゆ）', r: 'fuyu', vn: 'Mùa đông' } },
+        { char: 'へ', romaji: 'he', hint: 'Như cái đỉnh của một ngọn núi — đọc "he".', ex: { w: '部屋（へや）', r: 'heya', vn: 'Căn phòng' } },
+        { char: 'ほ', romaji: 'ho', hint: 'Như chữ は nhưng thêm một vạch ngang trên đầu — đọc "ho" (hô).', ex: { w: '本（ほん）', r: 'hon', vn: 'Sách' } },
+        { char: 'ま', romaji: 'ma', hint: 'Như cột buồm có 2 cánh buồm (2 vạch ngang), đuôi thắt nút — đọc "ma".', ex: { w: '町（まち）', r: 'machi', vn: 'Thành phố, thị trấn' } },
+        { char: 'み', romaji: 'mi', hint: 'Như chữ M bị nghiêng rồi chụm đuôi lại — đọc "mi" (mì).', ex: { w: '水（みず）', r: 'mizu', vn: 'Nước' } },
+        { char: 'む', romaji: 'mu', hint: 'Như chữ m bị thắt nút ở giữa — đọc "mu" (mực).', ex: { w: '息子（むすこ）', r: 'musuko', vn: 'Con trai (của mình)' } },
+        { char: 'め', romaji: 'me', hint: 'Trông như con mắt — trong tiếng Nhật "me" nghĩa là mắt.', ex: { w: '眼鏡（めがね）', r: 'megane', vn: 'Kính' } },
+        { char: 'も', romaji: 'mo', hint: 'Như lưỡi câu có thêm 2 vạch ngang — đọc "mo" (mò cá).', ex: { w: 'もの', r: 'mono', vn: 'Đồ vật' } },
+        { char: 'や', romaji: 'ya', hint: 'Như mũi tên đang bay — trong tiếng Nhật "ya" nghĩa là mũi tên.', ex: { w: '野菜（やさい）', r: 'yasai', vn: 'Rau' } },
+        { char: 'ゆ', romaji: 'yu', hint: 'Như vòng tròn ôm lấy một nét, như con cá đang bơi — đọc "yu" (yêu).', ex: { w: '雪（ゆき）', r: 'yuki', vn: 'Tuyết' } },
+        { char: 'よ', romaji: 'yo', hint: 'Như chữ Y bị gãy, thêm một vạch ngang — đọc "yo" (dô!).', ex: { w: '読みます（よみます）', r: 'yomimasu', vn: 'Đọc' } },
+        { char: 'ら', romaji: 'ra', hint: 'Như chữ r viết tay, nét phía trên là chấm nhỏ — đọc "ra".', ex: { w: '来週（らいしゅう）', r: 'raishuu', vn: 'Tuần sau' } },
+        { char: 'り', romaji: 'ri', hint: 'Như chữ い nhưng nét bên phải dài hơn — đọc "ri".', ex: { w: '旅行（りょこう）', r: 'ryokou', vn: 'Du lịch' } },
+        { char: 'る', romaji: 'ru', hint: 'Như số 3 có thêm cái đuôi thắt nút — đọc "ru".', ex: { w: 'ルール', r: 'ruuru', vn: 'Quy tắc' } },
+        { char: 'れ', romaji: 're', hint: 'Như chữ る nhưng đuôi không thắt nút, vẩy thẳng ra — đọc "re".', ex: { w: '冷蔵庫（れいぞうこ）', r: 'reizouko', vn: 'Tủ lạnh' } },
+        { char: 'ろ', romaji: 'ro', hint: 'Như số 3 bình thường, không có nút ở đuôi — đọc "ro".', ex: { w: 'ろく', r: 'roku', vn: 'Số 6' } },
+        { char: 'わ', romaji: 'wa', hint: 'Như thân thiên nga cong tròn — đọc "wa".', ex: { w: '私（わたし）', r: 'watashi', vn: 'Tôi' } },
+        { char: 'を', romaji: 'wo', hint: 'Như người đang nhảy sào — chỉ dùng làm trợ từ, đọc như "o".', ex: { note: 'を là trợ từ đánh dấu tân ngữ nên không có từ vựng bắt đầu bằng を — vd: 水を飲みます (uống nước).' } },
+        { char: 'ん', romaji: 'n', hint: 'Như chữ n viết kéo dài, móc ở cuối — đọc "n".', ex: { note: 'ん là âm cuối nên không có từ bắt đầu bằng ん — vd: 日本（にほん）, 本（ほん） đều có ん ở cuối.' } }
     ];
 
     const katakanaData = [
-        { char: 'ア', romaji: 'a', hint: 'Như chữ A bị gãy mất phần ngang giữa — đọc "a".' },
-        { char: 'イ', romaji: 'i', hint: 'Như chữ I nghiêng nghiêng như người đang sải bước — đọc "i".' },
-        { char: 'ウ', romaji: 'u', hint: 'Như chữ U vuông góc đội thêm một nét ngắn ở đỉnh — đọc "u".' },
-        { char: 'エ', romaji: 'e', hint: 'Như chữ I nằm ngang bị kẹp giữa hai vạch ngang — đọc "e" (ê).' },
-        { char: 'オ', romaji: 'o', hint: 'Như chữ A bị bẻ thêm một nét chéo ở vai trái — đọc "o" (ôi).' },
-        { char: 'カ', romaji: 'ka', hint: 'Như chữ か nhưng bẻ thẳng thành góc vuông — đọc "ka".' },
-        { char: 'キ', romaji: 'ki', hint: 'Như cây chìa khóa (key) với thân vuông góc — đọc "ki".' },
-        { char: 'ク', romaji: 'ku', hint: 'Như cái mỏ chim hếch lên trên — kêu "ku ku" — đọc "ku".' },
-        { char: 'ケ', romaji: 'ke', hint: 'Như chữ け bị bẻ vuông góc — đọc "ke" (ken nghĩa là kiếm).' },
-        { char: 'コ', romaji: 'ko', hint: 'Như hai cạnh trên và bên phải của ô vuông — đọc "ko".' },
-        { char: 'サ', romaji: 'sa', hint: 'Như chữ さ vuông góc, vạch ngang ở đỉnh — đọc "sa".' },
-        { char: 'シ', romaji: 'shi', hint: 'Hai chấm nghiêng rồi móc ngược lên như đèn pha — đọc "shi".' },
-        { char: 'ス', romaji: 'su', hint: 'Như cánh buồm đang tung, bẻ thành góc nhọn — đọc "su".' },
-        { char: 'セ', romaji: 'se', hint: 'Như chữ せ bị bẻ vuông góc — đọc "se" (sếp).' },
-        { char: 'ソ', romaji: 'so', hint: 'Như một nhát chém xiên xuống — đọc "so".' },
-        { char: 'タ', romaji: 'ta', hint: 'Như chữ た ghép vuông góc — đọc "ta" (tà).' },
-        { char: 'チ', romaji: 'chi', hint: 'Như chữ ち vuông góc, giống số 5 nghiêng — đọc "chi".' },
-        { char: 'ツ', romaji: 'tsu', hint: 'Ba giọt nước rơi: hai chấm chếch rồi kéo một nét dài — đọc "tsu".' },
-        { char: 'テ', romaji: 'te', hint: 'Hai vạch ngang rồi kéo chéo xuống như tia sét — đọc "te" (tê).' },
-        { char: 'ト', romaji: 'to', hint: 'Như cột cờ có một nhánh vươn sang phải — đọc "to".' },
-        { char: 'ナ', romaji: 'na', hint: 'Như chữ thập (số 10) bị nghiêng lệch — đọc "na" (na ná).' },
-        { char: 'ニ', romaji: 'ni', hint: 'Hai vạch ngang — "ni" chính là số 2 trong tiếng Nhật.' },
-        { char: 'ヌ', romaji: 'nu', hint: 'Hai nét chéo chụm lại, một nét ngắn đè lên giữa — đọc "nu".' },
-        { char: 'ネ', romaji: 'ne', hint: 'Như cây thánh giá có thêm móc bên trái — đọc "ne".' },
-        { char: 'ノ', romaji: 'no', hint: 'Như một nhát dao chém duy nhất — đọc "no".' },
-        { char: 'ハ', romaji: 'ha', hint: 'Hai nét chéo tách ra như râu mèo — đọc "ha" (ha ha).' },
-        { char: 'ヒ', romaji: 'hi', hint: 'Như chiếc ly nghiêng có chân đế ngang — đọc "hi" (hi hi).' },
-        { char: 'フ', romaji: 'fu', hint: 'Như dấu ngoặc kép mở (") bị kéo dài — đọc "fu" (Phú).' },
-        { char: 'ヘ', romaji: 'he', hint: 'Như đỉnh một ngọn núi, góc sắc hơn chữ へ — đọc "he".' },
-        { char: 'ホ', romaji: 'ho', hint: 'Như chữ H xòe thêm hai chân chéo — đọc "ho" (hô).' },
-        { char: 'マ', romaji: 'ma', hint: 'Như số 7 úp ngược, móc ngang ở phía trên — đọc "ma".' },
-        { char: 'ミ', romaji: 'mi', hint: 'Ba gạch xiên song song như ba sợi chỉ — đọc "mi" (mì).' },
-        { char: 'ム', romaji: 'mu', hint: 'Như hình tam giác bị chụm đuôi — đọc "mu" (mực).' },
-        { char: 'メ', romaji: 'me', hint: 'Hai nét chéo cắt nhau, nét sau dài hơn — đọc "me" (mắt).' },
-        { char: 'モ', romaji: 'mo', hint: 'Như chữ mo vuông góc: hai vạch ngang cắm vào cột dọc — đọc "mo" (mò).' },
-        { char: 'ヤ', romaji: 'ya', hint: 'Như mũi tên đang bay, vuông góc hơn chữ や — "ya" nghĩa là mũi tên.' },
-        { char: 'ユ', romaji: 'yu', hint: 'Như góc vuông úp sang bên phải, kín ở đáy — đọc "yu" (yêu).' },
-        { char: 'ヨ', romaji: 'yo', hint: 'Như chữ E bị xoay ngang, ba răng cưa hướng sang trái — đọc "yo" (dô!).' },
-        { char: 'ラ', romaji: 'ra', hint: 'Như chữ ら vuông góc, hai vạch ngang phía trên — đọc "ra".' },
-        { char: 'リ', romaji: 'ri', hint: 'Hai nét thẳng đứng như hai nhát dao, bên phải dài hơn — đọc "ri".' },
-        { char: 'ル', romaji: 'ru', hint: 'Như đôi chân đang sải, giống る nhưng không thắt nút — đọc "ru".' },
-        { char: 'レ', romaji: 're', hint: 'Như một đường chảy ngược lên rồi gãy xuống — đọc "re".' },
-        { char: 'ロ', romaji: 'ro', hint: 'Như ô cửa sổ khép kín hình chữ nhật — đọc "ro".' },
-        { char: 'ワ', romaji: 'wa', hint: 'Như chữ wa gấp khúc, thân thiên nga vuông góc — đọc "wa".' },
-        { char: 'ヲ', romaji: 'wo', hint: 'Như chữ W gộp còn 3 nét, chỉ dùng làm trợ từ — đọc như "o".' },
-        { char: 'ン', romaji: 'n', hint: 'Hai chấm xiên rồi kéo một nét lên chếch trên — đọc "n" (giống ん).' }
+        { char: 'ア', romaji: 'a', hint: 'Như chữ A bị gãy mất phần ngang giữa — đọc "a".', ex: { w: 'アメリカ', r: 'amerika', vn: 'Mỹ' } },
+        { char: 'イ', romaji: 'i', hint: 'Như chữ I nghiêng nghiêng như người đang sải bước — đọc "i".', ex: { w: 'イタリア', r: 'itaria', vn: 'Ý' } },
+        { char: 'ウ', romaji: 'u', hint: 'Như chữ U vuông góc đội thêm một nét ngắn ở đỉnh — đọc "u".', ex: { w: 'うさぎ', r: 'usagi', vn: 'Con thỏ' } },
+        { char: 'エ', romaji: 'e', hint: 'Như chữ I nằm ngang bị kẹp giữa hai vạch ngang — đọc "e" (ê).', ex: { w: 'エレベーター', r: 'erebeetaa', vn: 'Thang máy' } },
+        { char: 'オ', romaji: 'o', hint: 'Như chữ A bị bẻ thêm một nét chéo ở vai trái — đọc "o" (ôi).', ex: { w: 'オーストラリア', r: 'oosutoraria', vn: 'Úc' } },
+        { char: 'カ', romaji: 'ka', hint: 'Như chữ か nhưng bẻ thẳng thành góc vuông — đọc "ka".', ex: { w: 'カメラ', r: 'kamera', vn: 'Máy ảnh' } },
+        { char: 'キ', romaji: 'ki', hint: 'Như cây chìa khóa (key) với thân vuông góc — đọc "ki".', ex: { w: 'きって', r: 'kitte', vn: 'Tem' } },
+        { char: 'ク', romaji: 'ku', hint: 'Như cái mỏ chim hếch lên trên — kêu "ku ku" — đọc "ku".', ex: { w: 'クリスマス', r: 'kurisumasu', vn: 'Giáng sinh' } },
+        { char: 'ケ', romaji: 'ke', hint: 'Như chữ け bị bẻ vuông góc — đọc "ke" (ken nghĩa là kiếm).', ex: { w: 'ケーキ', r: 'keeki', vn: 'Bánh ngọt' } },
+        { char: 'コ', romaji: 'ko', hint: 'Như hai cạnh trên và bên phải của ô vuông — đọc "ko".', ex: { w: 'コーヒー', r: 'koohii', vn: 'Cà phê' } },
+        { char: 'サ', romaji: 'sa', hint: 'Như chữ さ vuông góc, vạch ngang ở đỉnh — đọc "sa".', ex: { w: 'サッカー', r: 'sakkaa', vn: 'Bóng đá' } },
+        { char: 'シ', romaji: 'shi', hint: 'Hai chấm nghiêng rồi móc ngược lên như đèn pha — đọc "shi".', ex: { w: 'シャツ', r: 'shatsu', vn: 'Áo sơ mi' } },
+        { char: 'ス', romaji: 'su', hint: 'Như cánh buồm đang tung, bẻ thành góc nhọn — đọc "su".', ex: { w: 'スポーツ', r: 'supootsu', vn: 'Thể thao' } },
+        { char: 'セ', romaji: 'se', hint: 'Như chữ せ bị bẻ vuông góc — đọc "se" (sếp).', ex: { w: 'セール', r: 'seeru', vn: 'Giảm giá' } },
+        { char: 'ソ', romaji: 'so', hint: 'Như một nhát chém xiên xuống — đọc "so".', ex: { w: 'そば', r: 'soba', vn: 'Món mì soba' } },
+        { char: 'タ', romaji: 'ta', hint: 'Như chữ た ghép vuông góc — đọc "ta" (tà).', ex: { w: 'タイ', r: 'tai', vn: 'Thái Lan' } },
+        { char: 'チ', romaji: 'chi', hint: 'Như chữ ち vuông góc, giống số 5 nghiêng — đọc "chi".', ex: { w: 'チケット', r: 'chiketto', vn: 'Vé' } },
+        { char: 'ツ', romaji: 'tsu', hint: 'Ba giọt nước rơi: hai chấm chếch rồi kéo một nét dài — đọc "tsu".', ex: { w: '釣り（つり）', r: 'tsuri', vn: 'Câu cá' } },
+        { char: 'テ', romaji: 'te', hint: 'Hai vạch ngang rồi kéo chéo xuống như tia sét — đọc "te" (tê).', ex: { w: 'テーブル', r: 'teeburu', vn: 'Bàn' } },
+        { char: 'ト', romaji: 'to', hint: 'Như cột cờ có một nhánh vươn sang phải — đọc "to".', ex: { w: '時計（とけい）', r: 'tokei', vn: 'Đồng hồ' } },
+        { char: 'ナ', romaji: 'na', hint: 'Như chữ thập (số 10) bị nghiêng lệch — đọc "na" (na ná).', ex: { w: 'ナイフ', r: 'naifu', vn: 'Dao' } },
+        { char: 'ニ', romaji: 'ni', hint: 'Hai vạch ngang — "ni" chính là số 2 trong tiếng Nhật.', ex: { w: 'ニュース', r: 'nyuusu', vn: 'Tin tức' } },
+        { char: 'ヌ', romaji: 'nu', hint: 'Hai nét chéo chụm lại, một nét ngắn đè lên giữa — đọc "nu".', ex: { w: '脱ぎます（ぬぎます）', r: 'nugimasu', vn: 'Cởi (quần áo)' } },
+        { char: 'ネ', romaji: 'ne', hint: 'Như cây thánh giá có thêm móc bên trái — đọc "ne".', ex: { w: 'ネックレス', r: 'nekkuresu', vn: 'Vòng cổ' } },
+        { char: 'ノ', romaji: 'no', hint: 'Như một nhát dao chém duy nhất — đọc "no".', ex: { w: '飲み物（のみもの）', r: 'nomimono', vn: 'Đồ uống' } },
+        { char: 'ハ', romaji: 'ha', hint: 'Hai nét chéo tách ra như râu mèo — đọc "ha" (ha ha).', ex: { w: 'ハンバーグ', r: 'hanbaagu', vn: 'Món thịt băm viên' } },
+        { char: 'ヒ', romaji: 'hi', hint: 'Như chiếc ly nghiêng có chân đế ngang — đọc "hi" (hi hi).', ex: { w: '飛行機（ひこうき）', r: 'hikouki', vn: 'Máy bay' } },
+        { char: 'フ', romaji: 'fu', hint: 'Như dấu ngoặc kép mở (") bị kéo dài — đọc "fu" (Phú).', ex: { w: 'フランス', r: 'furansu', vn: 'Pháp' } },
+        { char: 'ヘ', romaji: 'he', hint: 'Như đỉnh một ngọn núi, góc sắc hơn chữ へ — đọc "he".', ex: { w: '部屋（へや）', r: 'heya', vn: 'Căn phòng' } },
+        { char: 'ホ', romaji: 'ho', hint: 'Như chữ H xòe thêm hai chân chéo — đọc "ho" (hô).', ex: { w: 'ホテル', r: 'hoteru', vn: 'Khách sạn' } },
+        { char: 'マ', romaji: 'ma', hint: 'Như số 7 úp ngược, móc ngang ở phía trên — đọc "ma".', ex: { w: '町（まち）', r: 'machi', vn: 'Thành phố, thị trấn' } },
+        { char: 'ミ', romaji: 'mi', hint: 'Ba gạch xiên song song như ba sợi chỉ — đọc "mi" (mì).', ex: { w: '水着（みずぎ）', r: 'mizugi', vn: 'Đồ bơi' } },
+        { char: 'ム', romaji: 'mu', hint: 'Như hình tam giác bị chụm đuôi — đọc "mu" (mực).', ex: { w: '息子（むすこ）', r: 'musuko', vn: 'Con trai (của mình)' } },
+        { char: 'メ', romaji: 'me', hint: 'Hai nét chéo cắt nhau, nét sau dài hơn — đọc "me" (mắt).', ex: { w: 'メール', r: 'meeru', vn: 'Thư điện tử' } },
+        { char: 'モ', romaji: 'mo', hint: 'Như chữ mo vuông góc: hai vạch ngang cắm vào cột dọc — đọc "mo" (mò).', ex: { w: 'もの', r: 'mono', vn: 'Đồ vật' } },
+        { char: 'ヤ', romaji: 'ya', hint: 'Như mũi tên đang bay, vuông góc hơn chữ や — "ya" nghĩa là mũi tên.', ex: { w: '焼き肉（やきにく）', r: 'yakiniku', vn: 'Thịt nướng' } },
+        { char: 'ユ', romaji: 'yu', hint: 'Như góc vuông úp sang bên phải, kín ở đáy — đọc "yu" (yêu).', ex: { w: '雪（ゆき）', r: 'yuki', vn: 'Tuyết' } },
+        { char: 'ヨ', romaji: 'yo', hint: 'Như chữ E bị xoay ngang, ba răng cưa hướng sang trái — đọc "yo" (dô!).', ex: { w: '読みます（よみます）', r: 'yomimasu', vn: 'Đọc' } },
+        { char: 'ラ', romaji: 'ra', hint: 'Như chữ ら vuông góc, hai vạch ngang phía trên — đọc "ra".', ex: { w: 'ラーメン', r: 'raamen', vn: 'Mỳ Nhật' } },
+        { char: 'リ', romaji: 'ri', hint: 'Hai nét thẳng đứng như hai nhát dao, bên phải dài hơn — đọc "ri".', ex: { w: 'りんご', r: 'ringo', vn: 'Quả táo' } },
+        { char: 'ル', romaji: 'ru', hint: 'Như đôi chân đang sải, giống る nhưng không thắt nút — đọc "ru".', ex: { w: 'ルームメイト', r: 'ruumumeito', vn: 'Bạn cùng phòng' } },
+        { char: 'レ', romaji: 're', hint: 'Như một đường chảy ngược lên rồi gãy xuống — đọc "re".', ex: { w: 'レストラン', r: 'resutoran', vn: 'Nhà hàng' } },
+        { char: 'ロ', romaji: 'ro', hint: 'Như ô cửa sổ khép kín hình chữ nhật — đọc "ro".', ex: { w: 'ロシア', r: 'roshia', vn: 'Nga' } },
+        { char: 'ワ', romaji: 'wa', hint: 'Như chữ wa gấp khúc, thân thiên nga vuông góc — đọc "wa".', ex: { w: '私（わたし）', r: 'watashi', vn: 'Tôi' } },
+        { char: 'ヲ', romaji: 'wo', hint: 'Như chữ W gộp còn 3 nét, chỉ dùng làm trợ từ — đọc như "o".', ex: { note: 'ヲ là trợ từ (bản viết katakana của を) nên không có từ vựng bắt đầu bằng ヲ — vd: 水ヲ飲みます (uống nước).' } },
+        { char: 'ン', romaji: 'n', hint: 'Hai chấm xiên rồi kéo một nét lên chếch trên — đọc "n" (giống ん).', ex: { note: 'ン là âm cuối (bản katakana của ん) — không có từ bắt đầu bằng ン — vd: ニホン (Nhật Bản), ホン (sách) đều có ン ở cuối.' } }
     ];
 
     let currentQuestion = {};
@@ -612,7 +620,16 @@
     }
 
     function showHint() {
-        hintBox.innerHTML = `<strong>Mẹo nhớ:</strong> ${currentQuestion.hint}`;
+        let html = `<strong>Mẹo nhớ:</strong> ${currentQuestion.hint}`;
+        const ex = currentQuestion.ex;
+        if (ex) {
+            if (ex.note) {
+                html += `<div class="hint-ex">${ex.note}</div>`;
+            } else {
+                html += `<div class="hint-ex">Ví dụ: <b>${ex.w}</b> (${ex.r}) – ${ex.vn}</div>`;
+            }
+        }
+        hintBox.innerHTML = html;
         hintBox.style.display = 'block';
     }
 

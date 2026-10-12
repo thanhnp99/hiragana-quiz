@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Game trắc nghiệm Hiragana 4 đáp án: xem chữ, nghe phát âm và chọn romaji đúng.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff6b6b'/%3E%3Ctext y='76' x='50' text-anchor='middle' font-size='68' fill='%23ffffff'%3E%E3%81%82%3C/text%3E%3C/svg%3E">
     <title>Game Quiz Hiragana - Trắc nghiệm 4 đáp án</title>
     <style>
         body {
@@ -12,8 +14,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background-color: white;
@@ -127,6 +132,34 @@
             display: none;
             border: 1px solid #ffeeba;
         }
+
+        /* Màn hình nhỏ: thu gọn để không bị tràn */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            .container {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .character-box {
+                font-size: 72px;
+                padding: 15px;
+            }
+            .options-grid {
+                gap: 8px;
+            }
+            .option-btn {
+                font-size: 17px;
+                padding: 12px 8px;
+            }
+            .message {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -147,7 +180,7 @@
         <button class="action-btn btn-hint" onclick="showHint()">Gợi ý</button>
     </div>
     
-    <div class="message" id="message"></div>
+    <div class="message" id="message" aria-live="polite"></div>
     <div class="hint-box" id="hint-box"></div>
 </div>
 
@@ -203,6 +236,8 @@
 
     let currentQuestion = {};
     let score = 0;
+    let lastIndex = -1;
+    let jaVoice = null;
 
     const charDisplay = document.getElementById('character-display');
     const optionsContainer = document.getElementById('options-container');
@@ -210,27 +245,22 @@
     const hintBox = document.getElementById('hint-box');
     const scoreVal = document.getElementById('score-val');
 
-    // Hàm tạo 4 lựa chọn ngẫu nhiên
-    function generateOptions(correctAnswer) {
-        let options = [correctAnswer];
-        
-        while(options.length < 4) {
-            let randomIndex = Math.floor(Math.random() * hiraganaData.length);
-            let randomRomaji = hiraganaData[randomIndex].romaji;
-            
-            // Đảm bảo không bị trùng đáp án
-            if(!options.includes(randomRomaji)) {
-                options.push(randomRomaji);
-            }
-        }
-        
-        // Xáo trộn mảng (Fisher-Yates) để đáp án đúng nằm ở vị trí bất kỳ
-        for (let i = options.length - 1; i > 0; i--) {
+    // Xáo trộn mảng tại chỗ theo Fisher-Yates
+    function shuffle(list) {
+        for (let i = list.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [options[i], options[j]] = [options[j], options[i]];
+            [list[i], list[j]] = [list[j], list[i]];
         }
+        return list;
+    }
 
-        return options;
+    // Hàm tạo 4 lựa chọn ngẫu nhiên (1 đúng + 3 sai)
+    function generateOptions(correctAnswer) {
+        const wrongOnes = shuffle(
+            hiraganaData.map(item => item.romaji).filter(romaji => romaji !== correctAnswer)
+        );
+
+        return shuffle([correctAnswer, ...wrongOnes.slice(0, 3)]);
     }
 
     function nextQuestion() {
@@ -239,8 +269,12 @@
         messageEl.className = 'message';
         hintBox.style.display = 'none';
 
-        // Lấy chữ cái ngẫu nhiên làm câu hỏi
-        const randomIndex = Math.floor(Math.random() * hiraganaData.length);
+        // Lấy chữ cái ngẫu nhiên làm câu hỏi (không lặp chữ vừa làm)
+        let randomIndex = Math.floor(Math.random() * hiraganaData.length);
+        while (randomIndex === lastIndex) {
+            randomIndex = Math.floor(Math.random() * hiraganaData.length);
+        }
+        lastIndex = randomIndex;
         currentQuestion = hiraganaData[randomIndex];
         charDisplay.textContent = currentQuestion.char;
 
@@ -257,17 +291,33 @@
         });
     }
 
+    // Chọn giọng đọc tiếng Nhật (danh sách giọng load bất đồng bộ)
+    function pickJapaneseVoice() {
+        if (!('speechSynthesis' in window)) return;
+        const voices = window.speechSynthesis.getVoices();
+        jaVoice = voices.find(voice => voice.lang && voice.lang.toLowerCase().startsWith('ja')) || null;
+    }
+
+    if ('speechSynthesis' in window) {
+        pickJapaneseVoice();
+        window.speechSynthesis.onvoiceschanged = pickJapaneseVoice;
+    }
+
     // Đọc âm thanh tiếng Nhật
     function playAudio() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(currentQuestion.char);
-            utterance.lang = 'ja-JP'; 
-            utterance.rate = 0.8;    
-            window.speechSynthesis.speak(utterance);
-        } else {
+        if (!currentQuestion.char) return;
+
+        if (!('speechSynthesis' in window)) {
             alert("Trình duyệt của bạn không hỗ trợ phát âm thanh.");
+            return;
         }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(currentQuestion.char);
+        utterance.lang = 'ja-JP';
+        utterance.rate = 0.8;
+        if (jaVoice) utterance.voice = jaVoice;
+        window.speechSynthesis.speak(utterance);
     }
 
     function showHint() {

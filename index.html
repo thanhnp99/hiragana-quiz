@@ -7,6 +7,9 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff6b6b'/%3E%3Ctext y='76' x='50' text-anchor='middle' font-size='68' fill='%23ffffff'%3E%E3%81%82%3C/text%3E%3C/svg%3E">
     <title>Game Quiz Hiragana - Trắc nghiệm 4 đáp án</title>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f8ff;
@@ -133,6 +136,135 @@
             border: 1px solid #ffeeba;
         }
 
+        /* ==== Màn hình chọn chế độ ==== */
+        .screen {
+            display: none;
+            width: 100%;
+            justify-content: center;
+        }
+        .screen.active {
+            display: flex;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .back-btn {
+            border: none;
+            background: #eef2f5;
+            color: #555;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .back-btn:hover { background: #dfe6e9; color: #2c3e50; }
+        .mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 18px;
+            margin-bottom: 14px;
+            border: 2px solid #dfe6e9;
+            background: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .mode-btn:hover { border-color: #3498db; background: #f7fbff; transform: translateY(-2px); }
+        .mode-icon { font-size: 30px; }
+        .mode-btn small {
+            display: block;
+            font-weight: normal;
+            font-size: 13px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .home-sub { color: #888; margin-top: 0; font-size: 15px; }
+
+        /* ==== Màn hình viết chữ ==== */
+        .write-box { max-width: 420px; }
+        .kana-picker {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .kana-btn {
+            padding: 6px 0;
+            font-size: 17px;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .kana-btn:hover { border-color: #3498db; }
+        .kana-btn.active { background: #3498db; border-color: #3498db; color: #fff; }
+        .write-char {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        #write-svg {
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            height: auto;
+            margin: 0 auto 8px;
+            background: #fff;
+            border: 2px solid #dfe6e9;
+            border-radius: 14px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .model-stroke {
+            fill: none;
+            stroke: #ccd6dd;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .user-stroke {
+            fill: none;
+            stroke: #2c3e50;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .user-stroke.wrong { stroke: #e84118; }
+        .start-dot { fill: #3498db; stroke: #fff; stroke-width: 2; }
+        .start-num { fill: #fff; font-size: 9px; font-weight: bold; text-anchor: middle; }
+        .stroke-progress {
+            text-align: center;
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        .btn-demo { background-color: #9b59b6; color: #fff; }
+        .btn-demo:hover { background-color: #8e44ad; }
+        .btn-undo { background-color: #7f8fa6; color: #fff; }
+        .btn-undo:hover { background-color: #718096; }
+        .btn-clear { background-color: #e84118; color: #fff; }
+        .btn-clear:hover { background-color: #d63031; }
+        .credit {
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .credit a { color: #aaa; }
+
         /* Màn hình nhỏ: thu gọn để không bị tràn */
         @media (max-width: 480px) {
             body {
@@ -159,12 +291,42 @@
             .message {
                 font-size: 16px;
             }
+            .kana-picker {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .kana-btn {
+                font-size: 15px;
+                padding: 5px 0;
+            }
         }
     </style>
 </head>
 <body>
 
+<!-- Màn hình chọn chế độ -->
+<div class="screen active" id="screen-home">
+    <div class="container">
+        <h1>Hiragana Practice</h1>
+        <p class="home-sub">Học 46 chữ cơ bản</p>
+
+        <button class="mode-btn" onclick="showScreen('quiz')">
+            <span class="mode-icon">📝</span>
+            <span>Trắc nghiệm<small>Xem chữ, nghe và chọn romaji đúng</small></span>
+        </button>
+
+        <button class="mode-btn" onclick="showScreen('write')">
+            <span class="mode-icon">✍️</span>
+            <span>Viết chữ<small>Luyện viết theo từng nét</small></span>
+        </button>
+    </div>
+</div>
+
+<!-- Màn hình trắc nghiệm -->
+<div class="screen" id="screen-quiz">
 <div class="container">
+    <div class="top-bar">
+        <button class="back-btn" onclick="showScreen('home')">← Quay lại</button>
+    </div>
     <h1>Hiragana Quiz</h1>
     <div class="score">Điểm của bạn: <span id="score-val">0</span></div>
     
@@ -183,7 +345,44 @@
     <div class="message" id="message" aria-live="polite"></div>
     <div class="hint-box" id="hint-box"></div>
 </div>
+</div>
 
+<!-- Màn hình viết chữ -->
+<div class="screen" id="screen-write">
+<div class="container write-box">
+    <div class="top-bar">
+        <button class="back-btn" onclick="showScreen('home')">← Quay lại</button>
+        <div class="score" style="margin-bottom:0">Viết đúng: <span id="write-score">0</span></div>
+    </div>
+    <h1>Viết chữ</h1>
+
+    <!-- Chọn chữ cần luyện -->
+    <div class="kana-picker" id="kana-picker"></div>
+
+    <div class="write-char" id="write-char-label">あ (a)</div>
+
+    <svg id="write-svg" viewBox="0 0 109 109" aria-label="Khung viết chữ">
+        <g id="write-grid"></g>
+        <g id="write-model"></g>
+        <g id="write-user"></g>
+        <g id="write-markers"></g>
+    </svg>
+
+    <div class="stroke-progress" id="stroke-progress">Nét: 0/0</div>
+
+    <div class="btn-group">
+        <button class="action-btn btn-audio" onclick="playWriteAudio()">🔊 Nghe</button>
+        <button class="action-btn btn-demo" onclick="animateModel()">▶ Xem mẫu</button>
+        <button class="action-btn btn-undo" onclick="undoStroke()">⤺ Lùi nét</button>
+        <button class="action-btn btn-clear" onclick="clearStrokes()">🗑 Xóa</button>
+    </div>
+
+    <div class="message" id="write-message" aria-live="polite"></div>
+    <div class="credit">Thiết kế nét chữ: <a href="http://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a> (CC BY-SA 3.0)</div>
+</div>
+</div>
+
+<script src="strokes.js"></script>
 <script>
     const hiraganaData = [
         { char: 'あ', romaji: 'a', hint: 'Như chữ A có bụng to, miệng hô "a—" dài — đọc "a".' },
@@ -303,9 +502,10 @@
         window.speechSynthesis.onvoiceschanged = pickJapaneseVoice;
     }
 
-    // Đọc âm thanh tiếng Nhật
-    function playAudio() {
-        if (!currentQuestion.char) return;
+    // Đọc âm thanh tiếng Nhật (mặc định đọc chữ của câu hỏi)
+    function playAudio(text) {
+        const value = text || (currentQuestion && currentQuestion.char);
+        if (!value) return;
 
         if (!('speechSynthesis' in window)) {
             alert("Trình duyệt của bạn không hỗ trợ phát âm thanh.");
@@ -313,7 +513,7 @@
         }
 
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(currentQuestion.char);
+        const utterance = new SpeechSynthesisUtterance(value);
         utterance.lang = 'ja-JP';
         utterance.rate = 0.8;
         if (jaVoice) utterance.voice = jaVoice;
@@ -360,8 +560,383 @@
         }
     }
 
-    // Bắt đầu game khi tải trang
-    window.onload = nextQuestion;
+    // =================== CHUYỂN MÀN HÌNH ===================
+    let quizStarted = false;
+    let writeStarted = false;
+
+    function showScreen(name) {
+        if (name !== 'quiz' && name !== 'write') name = 'home';
+
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.toggle('active', screen.id === 'screen-' + name);
+        });
+
+        if (name === 'quiz' && !quizStarted) {
+            quizStarted = true;
+            nextQuestion();
+        }
+        if (name === 'write' && !writeStarted) {
+            writeStarted = true;
+            initWriteScreen();
+        }
+
+        if (location.hash !== '#' + name) {
+            try { history.replaceState(null, '', '#' + name); } catch (error) { /* bỏ qua */ }
+        }
+    }
+
+    window.addEventListener('hashchange', () => showScreen(location.hash.slice(1)));
+
+    // =================== CHẾ ĐỘ VIẾT CHỮ (MỨC A) ===================
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const START_TOLERANCE = 24; // sai số cho phép so với điểm bắt đầu của nét mẫu (đơn vị 109)
+    const END_TOLERANCE = 32;
+
+    let writeChar = 'あ';
+    let modelPathEls = [];
+    let userStrokeEls = [];
+    let expectedStroke = 0;
+    let writeScore = 0;
+    let drawing = false;
+    let drawingPoints = [];
+    let drawingPathEl = null;
+    let demoRunning = false;
+    let writeAdvanceTimer = null;
+
+    const writeSvg = document.getElementById('write-svg');
+    const writeMessageEl = document.getElementById('write-message');
+    const strokeProgressEl = document.getElementById('stroke-progress');
+    const writeScoreVal = document.getElementById('write-score');
+    const writeCharLabel = document.getElementById('write-char-label');
+
+    function initWriteScreen() {
+        buildWriteGrid();
+        buildKanaPicker();
+        selectKana(writeChar);
+        writeSvg.addEventListener('pointerdown', onWritePointerDown);
+        writeSvg.addEventListener('pointermove', onWritePointerMove);
+        writeSvg.addEventListener('pointerup', onWritePointerUp);
+        writeSvg.addEventListener('pointercancel', onWritePointerUp);
+    }
+
+    function setWriteMessage(text, type) {
+        writeMessageEl.textContent = text;
+        writeMessageEl.className = 'message' + (type ? ' ' + type : '');
+    }
+
+    function updateStrokeProgress() {
+        strokeProgressEl.textContent = `Nét: ${expectedStroke}/${modelPathEls.length}`;
+    }
+
+    // Khung "ます": ô vuông + đường dẫn giữa và đường chéo
+    function buildWriteGrid() {
+        const grid = document.getElementById('write-grid');
+        grid.innerHTML = '';
+        const size = 109;
+        const half = size / 2;
+        const add = (tag, attrs) => {
+            const el = document.createElementNS(SVG_NS, tag);
+            Object.keys(attrs).forEach(key => el.setAttribute(key, attrs[key]));
+            grid.appendChild(el);
+        };
+
+        add('rect', { x: 3, y: 3, width: size - 6, height: size - 6, rx: 8, fill: '#fff', stroke: '#c9d6df', 'stroke-width': 2 });
+        add('line', { x1: half, y1: 7, x2: half, y2: size - 7, stroke: '#e3ebf0', 'stroke-width': 1.5, 'stroke-dasharray': '6 6' });
+        add('line', { x1: 7, y1: half, x2: size - 7, y2: half, stroke: '#e3ebf0', 'stroke-width': 1.5, 'stroke-dasharray': '6 6' });
+        add('line', { x1: 9, y1: 9, x2: size - 9, y2: size - 9, stroke: '#eef3f6', 'stroke-width': 1.2, 'stroke-dasharray': '4 8' });
+        add('line', { x1: size - 9, y1: 9, x2: 9, y2: size - 9, stroke: '#eef3f6', 'stroke-width': 1.2, 'stroke-dasharray': '4 8' });
+    }
+
+    function buildKanaPicker() {
+        const picker = document.getElementById('kana-picker');
+        picker.innerHTML = '';
+        hiraganaData.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'kana-btn';
+            btn.type = 'button';
+            btn.textContent = item.char;
+            btn.onclick = () => selectKana(item.char);
+            picker.appendChild(btn);
+        });
+    }
+
+    function selectKana(ch) {
+        writeChar = ch;
+        clearTimeout(writeAdvanceTimer);
+
+        document.querySelectorAll('.kana-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent === ch);
+        });
+
+        const item = hiraganaData.find(entry => entry.char === ch);
+        writeCharLabel.textContent = item ? `${ch} (${item.romaji})` : ch;
+        loadModel();
+    }
+
+    function loadModel() {
+        const modelG = document.getElementById('write-model');
+        const userG = document.getElementById('write-user');
+        const markersG = document.getElementById('write-markers');
+        modelG.innerHTML = '';
+        userG.innerHTML = '';
+        markersG.innerHTML = '';
+        modelPathEls = [];
+        userStrokeEls = [];
+        expectedStroke = 0;
+        drawing = false;
+        demoRunning = false;
+
+        const paths = (typeof STROKE_DATA !== 'undefined') ? STROKE_DATA[writeChar] : null;
+        if (!paths || !paths.length) {
+            updateStrokeProgress();
+            setWriteMessage('Chưa có dữ liệu nét cho chữ này.', 'wrong');
+            return;
+        }
+
+        paths.forEach(d => {
+            const path = document.createElementNS(SVG_NS, 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('class', 'model-stroke');
+            modelG.appendChild(path);
+            modelPathEls.push(path);
+        });
+
+        updateStrokeProgress();
+        drawStartMarker();
+        setWriteMessage('Vẽ nét 1 từ chấm xanh.', '');
+    }
+
+    // Chấm tròn đánh dấu điểm bắt đầu của nét kế tiếp
+    function drawStartMarker() {
+        const markersG = document.getElementById('write-markers');
+        markersG.innerHTML = '';
+        if (expectedStroke >= modelPathEls.length) return;
+
+        const start = modelPathEls[expectedStroke].getPointAtLength(0);
+
+        const circle = document.createElementNS(SVG_NS, 'circle');
+        circle.setAttribute('cx', start.x);
+        circle.setAttribute('cy', start.y);
+        circle.setAttribute('r', 7.5);
+        circle.setAttribute('class', 'start-dot');
+        markersG.appendChild(circle);
+
+        const text = document.createElementNS(SVG_NS, 'text');
+        text.setAttribute('x', start.x);
+        text.setAttribute('y', start.y + 3.2);
+        text.setAttribute('class', 'start-num');
+        text.textContent = expectedStroke + 1;
+        markersG.appendChild(text);
+    }
+
+    function svgPointFromEvent(evt) {
+        const point = writeSvg.createSVGPoint();
+        point.x = evt.clientX;
+        point.y = evt.clientY;
+        const matrix = writeSvg.getScreenCTM();
+        return matrix ? point.matrixTransform(matrix.inverse()) : point;
+    }
+
+    function pointsToPathData(points) {
+        if (points.length < 2) return '';
+        let d = `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`;
+        for (let i = 1; i < points.length - 1; i++) {
+            const midX = (points[i].x + points[i + 1].x) / 2;
+            const midY = (points[i].y + points[i + 1].y) / 2;
+            d += ` Q${points[i].x.toFixed(2)},${points[i].y.toFixed(2)} ${midX.toFixed(2)},${midY.toFixed(2)}`;
+        }
+        const last = points[points.length - 1];
+        d += ` L${last.x.toFixed(2)},${last.y.toFixed(2)}`;
+        return d;
+    }
+
+    function pathLengthOf(points) {
+        let total = 0;
+        for (let i = 1; i < points.length; i++) {
+            total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+        }
+        return total;
+    }
+
+    function onWritePointerDown(evt) {
+        if (demoRunning) return;
+        if (!modelPathEls.length) {
+            setWriteMessage('Chưa có dữ liệu nét cho chữ này.', 'wrong');
+            return;
+        }
+        if (expectedStroke >= modelPathEls.length) {
+            setWriteMessage('Đã viết đủ chữ này! Chọn chữ khác hoặc bấm 🗑 Xóa.', 'correct');
+            return;
+        }
+
+        evt.preventDefault();
+        drawing = true;
+        drawingPoints = [svgPointFromEvent(evt)];
+        drawingPathEl = document.createElementNS(SVG_NS, 'path');
+        drawingPathEl.setAttribute('class', 'user-stroke');
+        drawingPathEl.setAttribute('d', '');
+        document.getElementById('write-user').appendChild(drawingPathEl);
+
+        if (writeSvg.setPointerCapture) writeSvg.setPointerCapture(evt.pointerId);
+    }
+
+    function onWritePointerMove(evt) {
+        if (!drawing) return;
+        const point = svgPointFromEvent(evt);
+        const last = drawingPoints[drawingPoints.length - 1];
+        if (Math.hypot(point.x - last.x, point.y - last.y) < 1.2) return;
+        drawingPoints.push(point);
+        drawingPathEl.setAttribute('d', pointsToPathData(drawingPoints));
+    }
+
+    function onWritePointerUp() {
+        if (!drawing) return;
+        drawing = false;
+        if (drawingPathEl) drawingPathEl.setAttribute('d', pointsToPathData(drawingPoints));
+        finishStroke();
+    }
+
+    // Chấm điểm mức A: đúng số nét + đúng vị trí bắt đầu của từng nét
+    function finishStroke() {
+        const pathEl = drawingPathEl;
+        const points = drawingPoints;
+        drawingPathEl = null;
+        drawingPoints = [];
+
+        if (!pathEl) return;
+
+        // Chấm chuột/nhấp quá ngắn → bỏ qua
+        if (points.length < 3 || pathLengthOf(points) < 8) {
+            pathEl.remove();
+            return;
+        }
+
+        const model = modelPathEls[expectedStroke];
+        if (!model) {
+            pathEl.remove();
+            return;
+        }
+
+        const modelStart = model.getPointAtLength(0);
+        const modelEnd = model.getPointAtLength(model.getTotalLength());
+        const startPoint = points[0];
+        const endPoint = points[points.length - 1];
+        const startDistance = Math.hypot(startPoint.x - modelStart.x, startPoint.y - modelStart.y);
+        const endDistance = Math.hypot(endPoint.x - modelEnd.x, endPoint.y - modelEnd.y);
+
+        // Sai điểm bắt đầu → coi như sai thứ tự nét, bỏ nét vừa vẽ
+        if (startDistance > START_TOLERANCE) {
+            pathEl.classList.add('wrong');
+            setTimeout(() => pathEl.remove(), 700);
+            setWriteMessage(`Sai thứ tự! Nét ${expectedStroke + 1} phải bắt đầu từ chấm số ${expectedStroke + 1}.`, 'wrong');
+            return;
+        }
+
+        userStrokeEls.push(pathEl);
+        expectedStroke++;
+        updateStrokeProgress();
+        drawStartMarker();
+
+        if (expectedStroke >= modelPathEls.length) {
+            writeScore++;
+            writeScoreVal.textContent = writeScore;
+            const tip = endDistance > END_TOLERANCE ? ' (Nét cuối hơi lệch nhưng vẫn đạt!)' : '';
+            setWriteMessage(`Chính xác! Viết đủ ${modelPathEls.length} nét.${tip}`, 'correct');
+            clearTimeout(writeAdvanceTimer);
+            writeAdvanceTimer = setTimeout(nextWriteChar, 1800);
+            return;
+        }
+
+        if (endDistance > END_TOLERANCE) {
+            setWriteMessage(`Nét ${expectedStroke} xong (đuôi hơi lệch). Vẽ tiếp nét ${expectedStroke + 1}.`, '');
+        } else {
+            setWriteMessage(`Nét ${expectedStroke} đúng! Vẽ tiếp nét ${expectedStroke + 1}.`, 'correct');
+        }
+    }
+
+    function nextWriteChar() {
+        let next = writeChar;
+        while (next === writeChar && hiraganaData.length > 1) {
+            next = hiraganaData[Math.floor(Math.random() * hiraganaData.length)].char;
+        }
+        selectKana(next);
+    }
+
+    function undoStroke() {
+        if (drawing) return;
+        clearTimeout(writeAdvanceTimer);
+        if (expectedStroke === 0) {
+            setWriteMessage('Chưa có nét nào để lùi.', '');
+            return;
+        }
+
+        expectedStroke--;
+        const removed = userStrokeEls.pop();
+        if (removed) removed.remove();
+        updateStrokeProgress();
+        drawStartMarker();
+        setWriteMessage(`Đã lùi. Vẽ lại nét ${expectedStroke + 1}.`, '');
+    }
+
+    function clearStrokes() {
+        if (drawing) return;
+        clearTimeout(writeAdvanceTimer);
+        document.getElementById('write-user').innerHTML = '';
+        userStrokeEls = [];
+        expectedStroke = 0;
+        updateStrokeProgress();
+        drawStartMarker();
+        setWriteMessage('Đã xóa. Vẽ nét 1 từ chấm xanh.', '');
+    }
+
+    function playWriteAudio() {
+        playAudio(writeChar);
+    }
+
+    // Xem mẫu: vẽ lần lượt từng nét theo đúng thứ tự
+    function animateModel() {
+        if (demoRunning || !modelPathEls.length) return;
+        demoRunning = true;
+        setWriteMessage('Đang xem mẫu...', '');
+
+        const steps = modelPathEls.map(path => {
+            const length = path.getTotalLength();
+            path.style.transition = 'none';
+            path.style.strokeDasharray = length;
+            path.style.strokeDashoffset = length;
+            return path;
+        });
+
+        let index = 0;
+        const drawNext = () => {
+            if (index >= steps.length) {
+                setTimeout(() => {
+                    steps.forEach(path => {
+                        path.style.transition = '';
+                        path.style.strokeDasharray = '';
+                        path.style.strokeDashoffset = '';
+                    });
+                    demoRunning = false;
+                    setWriteMessage('Vẽ nét 1 từ chấm xanh.', '');
+                }, 300);
+                return;
+            }
+
+            const path = steps[index];
+            path.getBoundingClientRect();
+            path.style.transition = 'stroke-dashoffset 0.55s ease-in-out';
+            path.style.strokeDashoffset = 0;
+            index++;
+            setTimeout(drawNext, 620);
+        };
+
+        drawNext();
+    }
+
+    // =================== KHỞI TẠO ===================
+    const initialHash = location.hash.slice(1);
+    showScreen(initialHash || 'home');
+
 </script>
 
 </body>

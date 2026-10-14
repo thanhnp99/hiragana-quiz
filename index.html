@@ -143,6 +143,47 @@
         }
         .hint-ex b { font-size: 16px; }
 
+        /* ==== Nhập đáp án romaji ==== */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .romaji-input {
+            width: 200px;
+            padding: 12px 16px;
+            font-size: 20px;
+            text-align: center;
+            border: 2px solid #b8d4f0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .romaji-input:focus { border-color: #3498db; }
+        .romaji-input.correct-ans { border-color: #27ae60; background-color: #e8f8f0; }
+        .romaji-input.wrong-ans { border-color: #e84118; background-color: #fdecea; }
+        .romaji-input:disabled { background-color: #eee; }
+        .btn-submit {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 22px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-submit:hover { background-color: #2980b9; }
+        .btn-submit:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        .input-type-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #7f8c8d;
+            min-height: 18px;
+        }
+
         /* ==== Màn hình chọn chế độ ==== */
         .screen {
             display: none;
@@ -374,6 +415,15 @@
         <!-- Các nút sẽ được tạo bằng Javascript -->
     </div>
     
+    <!-- Vùng nhập đáp án (trộn xen kẽ với trắc nghiệm) -->
+    <div class="input-area" id="input-area" style="display:none">
+        <input type="text" id="romaji-input" class="romaji-input" autocomplete="off"
+               autocapitalize="off" spellcheck="false"
+               placeholder="Romaji hoặc kana..." />
+        <button class="action-btn btn-submit" onclick="checkInputAnswer()">Trả lời</button>
+    </div>
+    <div class="input-type-label" id="input-type-label"></div>
+    
     <div class="btn-group">
         <button class="action-btn btn-audio" onclick="playAudio()">🔊 Nghe</button>
         <button class="action-btn btn-hint" onclick="showHint()">Gợi ý</button>
@@ -541,6 +591,13 @@
     const messageEl = document.getElementById('message');
     const hintBox = document.getElementById('hint-box');
     const scoreVal = document.getElementById('score-val');
+    const inputArea = document.getElementById('input-area');
+    const romajiInput = document.getElementById('romaji-input');
+    const inputTypeLabel = document.getElementById('input-type-label');
+
+    // Trộn xen kẽ: câu lẻ = trắc nghiệm, câu chẵn = nhập đáp án
+    let questionCount = 0;
+    let isInputQuestion = false;
 
     // Xáo trộn mảng tại chỗ theo Fisher-Yates
     function shuffle(list) {
@@ -560,6 +617,30 @@
         return shuffle([correctAnswer, ...wrongOnes.slice(0, 3)]);
     }
 
+    // Chuẩn hóa + chấp nhận biến thể romaji (shi/si, chi/ti...) và kana
+    function normalizeInput(s) {
+        return s.toLowerCase().replace(/[\s\-']/g, '');
+    }
+
+    const ROMAJI_VARIANTS = {
+        si: 'shi', ti: 'chi', tu: 'tsu', hu: 'fu', zi: 'ji', di: 'ji', du: 'zu',
+        she: 'shi', che: 'chi', tse: 'tsu', dzu: 'zu', wi: 'i', wu: 'u', we: 'e', wo: 'o',
+        nn: 'n', n: 'n'
+    };
+
+    function isCorrectInput(raw, question) {
+        const val = normalizeInput(raw);
+        if (!val) return false;
+        if (val === question.char) return true;
+        if (val === question.romaji) return true;
+        // を/ヲ đọc là "o" — chấp nhận cả "wo" và "o"
+        if (question.romaji === 'wo' && (val === 'o' || val === 'wo')) return true;
+        const alt = ROMAJI_VARIANTS[val];
+        if (alt && alt === question.romaji) return true;
+        if (question.romaji === 'n' && (val === 'nn' || val === "n'")) return true;
+        return false;
+    }
+
     function nextQuestion() {
         // Xoá thông báo cũ
         messageEl.textContent = '';
@@ -576,17 +657,35 @@
         currentQuestion = dataList[randomIndex];
         charDisplay.textContent = currentQuestion.char;
 
-        // Render 4 nút lựa chọn
-        const options = generateOptions(currentQuestion.romaji);
-        optionsContainer.innerHTML = ''; // Làm sạch container trước
-        
-        options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.textContent = opt;
-            btn.onclick = () => checkAnswer(opt, btn);
-            optionsContainer.appendChild(btn);
-        });
+        // Xen kẽ: câu lẻ trắc nghiệm, câu chẵn nhập romaji
+        isInputQuestion = questionCount % 2 === 1;
+        questionCount++;
+
+        if (isInputQuestion) {
+            optionsContainer.style.display = 'none';
+            inputArea.style.display = 'flex';
+            inputTypeLabel.textContent = 'Nhập romaji hoặc gõ kana để trả lời';
+            romajiInput.value = '';
+            romajiInput.className = 'romaji-input';
+            romajiInput.disabled = false;
+            romajiInput.focus();
+        } else {
+            inputArea.style.display = 'none';
+            optionsContainer.style.display = '';
+            inputTypeLabel.textContent = '';
+
+            // Render 4 nút lựa chọn
+            const options = generateOptions(currentQuestion.romaji);
+            optionsContainer.innerHTML = ''; // Làm sạch container trước
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
     }
 
     // Chọn giọng đọc tiếng Nhật (danh sách giọng load bất đồng bộ)
@@ -668,6 +767,38 @@
         }
     }
 
+    // Chấm điểm câu nhập romaji / kana
+    function checkInputAnswer() {
+        if (romajiInput.disabled) return;
+        const raw = romajiInput.value;
+        if (!raw.trim()) return;
+
+        romajiInput.disabled = true;
+        const ex = currentQuestion.ex;
+        const exText = ex ? (ex.note ? ex.note : `Ví dụ: ${ex.w} (${ex.r}) – ${ex.vn}`) : '';
+
+        if (isCorrectInput(raw, currentQuestion)) {
+            romajiInput.classList.add('correct-ans');
+            messageEl.textContent = 'Chính xác!' + (exText ? ' ' + exText : '');
+            messageEl.className = 'message correct';
+            score++;
+            scoreVal.textContent = score;
+            setTimeout(nextQuestion, 1200);
+        } else {
+            romajiInput.classList.add('wrong-ans');
+            messageEl.textContent = `Sai rồi! Đáp án đúng là "${currentQuestion.romaji}"` + (exText ? ' — ' + exText : '');
+            messageEl.className = 'message wrong';
+            score = 0;
+            scoreVal.textContent = score;
+            setTimeout(nextQuestion, 2200);
+        }
+    }
+
+    // Enter để trả lời ở ô nhập
+    romajiInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') checkInputAnswer();
+    });
+
     // =================== CHUYỂN MÀN HÌNH ===================
     let quizStarted = { hiragana: false, katakana: false };
     let writeStarted = false;
@@ -694,6 +825,7 @@
                 score = 0;
                 scoreVal.textContent = score;
                 lastIndex = -1;
+                questionCount = 0;
                 nextQuestion();
             }
         }

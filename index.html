@@ -419,7 +419,7 @@
     <div class="input-area" id="input-area" style="display:none">
         <input type="text" id="romaji-input" class="romaji-input" autocomplete="off"
                autocapitalize="off" spellcheck="false"
-               placeholder="Romaji hoặc kana..." />
+               placeholder="Nhập romaji..." />
         <button class="action-btn btn-submit" onclick="checkInputAnswer()">Trả lời</button>
     </div>
     <div class="input-type-label" id="input-type-label"></div>
@@ -631,7 +631,6 @@
     function isCorrectInput(raw, question) {
         const val = normalizeInput(raw);
         if (!val) return false;
-        if (val === question.char) return true;
         if (val === question.romaji) return true;
         // を/ヲ đọc là "o" — chấp nhận cả "wo" và "o"
         if (question.romaji === 'wo' && (val === 'o' || val === 'wo')) return true;
@@ -664,7 +663,7 @@
         if (isInputQuestion) {
             optionsContainer.style.display = 'none';
             inputArea.style.display = 'flex';
-            inputTypeLabel.textContent = 'Nhập romaji hoặc gõ kana để trả lời';
+            inputTypeLabel.textContent = 'Nhập romaji để trả lời';
             romajiInput.value = '';
             romajiInput.className = 'romaji-input';
             romajiInput.disabled = false;
